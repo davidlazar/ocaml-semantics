@@ -1,0 +1,2 @@
+parser: (xml_of_ocaml /dev/stdin | xml2k) <
+statistics: true
