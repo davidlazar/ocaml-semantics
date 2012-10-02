@@ -80,6 +80,7 @@ module OCAML-PRIM-OPS is
     rule 'primAdd(I1:Int,, I2:Int) => I1 +Int I2
     rule 'primSubtract(I1:Int,, I2:Int) => I1 -Int I2
     rule 'primMultiply(I1:Int,, I2:Int) => I1 *Int I2
+    rule 'primDivide(I1:Int,, I2:Int) => I1 /Int I2
 
     rule
         <k> ExApp(UOp:UnaryPrimOp, V:KResult) => getKLabel(UOp)(V) ...</k>
@@ -109,6 +110,7 @@ module OCAML-INIT is
             IdLid("+") |-> primAdd
             IdLid("-") |-> primSubtract
             IdLid("*") |-> primMultiply
+            IdLid("/") |-> primDivide
         </assign>
 
 end module
