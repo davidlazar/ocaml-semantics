@@ -49,6 +49,10 @@ module OCAML-CONFIGURATION is
                 </bindAttempts>
             </patternAnalysis>
         </T>
+        <result multiplicity="?" color="DodgerBlue">
+            <exprResult> .K </exprResult>
+        </result>
+
 
 end module
 
@@ -112,6 +116,20 @@ module OCAML-INIT is
             IdLid("*") |-> primMultiply
             IdLid("/") |-> primDivide
         </assign>
+
+end module
+
+module OCAML-CLEANUP is
+    including OCAML-INCLUDE
+
+    rule
+        <T>...
+            <k> V:KResult </k>
+        ...</T>
+        =>
+        <result>...
+            <exprResult> V </exprResult>
+        ...</result>
 
 end module
 
@@ -471,6 +489,7 @@ module OCAML-SEMANTICS is
 
     including OCAML-PRIM-OPS
     including OCAML-INIT
+    including OCAML-CLEANUP
     including OCAML-TOP-LEVEL
     including OCAML-PATTERNS
     including OCAML-MATCHING
