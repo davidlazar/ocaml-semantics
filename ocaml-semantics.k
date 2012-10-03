@@ -385,9 +385,7 @@ module OCAML-EXPRESSIONS is
         <k> ExSeq(K:K) => K ...</k>
 
     rule
-        <k> ExSem(Exp1:K, Exp2:K) => Exp1 ~> Exp2 ...</k>
-
-    // TODO V ; K => K
+        <k> ExSem(V:KResult, Exp:K) => Exp ...</k>
 
     rule ExIfe(IdUid("True"), Exp:K, _) => Exp
     rule ExIfe(IdUid("False"), _, Exp:K) => Exp
