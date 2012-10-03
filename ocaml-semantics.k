@@ -68,10 +68,16 @@ module OCAML-PRIM-OPS is
 
     syntax UnaryPrimOp
       ::= primNegate
+        | primNot
         | primRef
         | primRaise
 
     syntax BinaryPrimOp
+      ::= StrictBinaryPrimOp
+        | primAnd
+        | primOr
+
+    syntax StrictBinaryPrimOp
       ::= primAdd
         | primSubtract
         | primMultiply
@@ -86,13 +92,28 @@ module OCAML-PRIM-OPS is
     rule 'primMultiply(I1:Int,, I2:Int) => I1 *Int I2
     rule 'primDivide(I1:Int,, I2:Int) => I1 /Int I2
 
+    rule IdUid("False") => false
+    rule IdUid("True") => true
+    rule 'primNot(false) => true
+    rule 'primNot(true) => false
+
+    /* short-circuiting boolean operators */
+    rule ExApp(primClosure(primAnd, Exp1:K), Exp2:K) => ExIfe(Exp1, Exp2, false)
+    rule ExApp(primClosure(primOr, Exp1:K), Exp2:K) => ExIfe(Exp1, true, Exp2)
+
+
+    context ExApp(UOp:UnaryPrimOp, HOLE)
+
     rule
         <k> ExApp(UOp:UnaryPrimOp, V:KResult) => getKLabel(UOp)(V) ...</k>
 
     syntax KResult ::= primClosure "(" K "," K ")"
 
+    context ExApp(primClosure(SBOp:StrictBinaryPrimOp, HOLE), _)
+    context ExApp(primClosure(SBOp:StrictBinaryPrimOp, _), HOLE)
+
     rule
-        <k> ExApp(BOp:BinaryPrimOp, V:KResult) => primClosure(BOp, V)
+        <k> ExApp(BOp:BinaryPrimOp, K:K) => primClosure(BOp, K)
         ...</k>
 
     rule
@@ -115,6 +136,10 @@ module OCAML-INIT is
             IdLid("-") |-> primSubtract
             IdLid("*") |-> primMultiply
             IdLid("/") |-> primDivide
+
+            IdLid("not") |-> primNot
+            IdLid("&&") |-> primAnd
+            IdLid("||") |-> primOr
         </assign>
 
 end module
@@ -378,7 +403,7 @@ module OCAML-EXPRESSIONS is
         <env> Env:Map </env>
 
     rule
-        <k> ExApp(closure(Env':Map, MC:K), V:KResult) => ExMat(V, MC) ~> env(Env) ...</k>
+        <k> ExApp(closure(Env':Map, MC:K), K:K) => ExMat(K, MC) ~> env(Env) ...</k>
         <env> Env => Env' </env>
 
     rule
@@ -387,8 +412,8 @@ module OCAML-EXPRESSIONS is
     rule
         <k> ExSem(V:KResult, Exp:K) => Exp ...</k>
 
-    rule ExIfe(IdUid("True"), Exp:K, _) => Exp
-    rule ExIfe(IdUid("False"), _, Exp:K) => Exp
+    rule ExIfe(true, Exp:K, _) => Exp
+    rule ExIfe(false, _, Exp:K) => Exp
 
     // bind, recbind, assign
     syntax K ::= "bind" "(" K ")"
