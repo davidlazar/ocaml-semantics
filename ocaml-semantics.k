@@ -402,8 +402,10 @@ module OCAML-EXPRESSIONS is
         <k> ExFun(MC:K) => closure(Env, MC) ...</k>
         <env> Env:Map </env>
 
+    context ExApp(closure(_, _), HOLE)
+
     rule
-        <k> ExApp(closure(Env':Map, MC:K), K:K) => ExMat(K, MC) ~> env(Env) ...</k>
+        <k> ExApp(closure(Env':Map, MC:K), V:KResult) => ExMat(V, MC) ~> env(Env) ...</k>
         <env> Env => Env' </env>
 
     rule
