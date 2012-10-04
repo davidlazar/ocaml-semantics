@@ -7,6 +7,7 @@ module OCAML-SYNTAX-EXTRAS is
         | "binding"
         | "matching"
         | "assigning"
+        | "debug"
 
 
     syntax Loc ::= "loc" "(" Int ")"
