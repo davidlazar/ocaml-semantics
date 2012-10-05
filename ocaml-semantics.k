@@ -418,24 +418,37 @@ module OCAML-EXPRESSIONS is
     rule ExIfe(true, Exp:K, _) => Exp
     rule ExIfe(false, _, Exp:K) => Exp
 
-    // bind, recbind, assign
-    syntax K ::= "bind" "(" K ")"
+    syntax K ::= "group" "(" K "," K ")"
+    syntax K ::= "letbody" "(" K ")"
+
+    // TODO this can probably be better
+    rule
+        <k> ExLet(Binding:K, Exp:K)
+            => group(ExId(IdUid("()")), PaId(IdUid("()")))
+            ~> Binding ~> letbody(Exp) ~> env(Env) ...</k>
+        <env> Env:Map </env>
+
+    rule
+        <k> group(_, _) ~> (BiAnd(Binding1:K, Binding2:K) => Binding1 ~> Binding2) ...</k>
+
+    rule
+        <k> group(Exp1:K, Pat1:K) ~> BiEq(Pat2:K, Exp2:K)
+            => group(ExCom(Exp1, Exp2), PaCom(Pat1, Pat2))
+        ...</k>
+
+    rule
+        <k> group(Exp1:K, Pat:K) ~> letbody(Exp2:K)
+            => ExMat(Exp1, McArr(Pat, ExNil, Exp2))
+        ...</k>
+
     syntax K ::= "recbind" "(" K ")"
     syntax K ::= "assign" "(" K ")"
 
-    context bind(BiEq(_, HOLE))
     context assign(BiEq(_, HOLE))
-
-    rule
-        <k> ExLet(Binding:K, Exp:K) => bind(Binding) ~> Exp ~> env(Env) ...</k>
-        <env> Env:Map </env>
 
     rule
         <k> ExLetRec(Binding:K, Exp:K) => recbind(Binding) ~> assign(Binding) ~> Exp ~> env(Env) ...</k>
         <env> Env:Map </env>
-
-    rule
-        <k> bind(BiAnd(Binding1:K, Binding2:K)) => bind(Binding1) ~> bind(Binding2) ...</k>
 
     rule
         <k> recbind(BiAnd(Binding1:K, Binding2:K)) => recbind(Binding1) ~> recbind(Binding2) ...</k>
@@ -452,25 +465,6 @@ module OCAML-EXPRESSIONS is
         <k> assign(BiEq(PaId(X:Id), V:KResult)) => . ...</k>
         <env>... X |-> L:Loc ...</env>
         <store>... . => L |-> V ...</store>
-
-    rule
-        <k> bind(BiEq(Pat:K, V:KResult)) => binding ...</k>
-        (. =>
-            <patternAnalysis>...
-                <bindAttempts>
-                    <bindAttempt>...
-                        <value> V </value>
-                        <pattern> Pat </pattern>
-                    ...</bindAttempt>
-                </bindAttempts>
-            ...</patternAnalysis>
-        )
-
-    rule
-        <k> binding => assigning ...</k>
-        <bindK> bind-success(Subst:Map) => . </bindK>
-        <assign> . => Subst </assign>
-
 
     rule
         <k> ExMat(V:KResult, MC:K) => matching ...</k>
