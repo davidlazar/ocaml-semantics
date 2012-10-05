@@ -43,5 +43,13 @@ module OCAML-SYNTAX is
     syntax O ::= `ExTry "(" K "," K ")"
 
     syntax O ::= `StExp "(" K ")" // expr
+    syntax O ::= `StSem "(" K "," K ")" // st1 ;; st2
+    syntax O ::= `StExc "(" K "," K ")" // exception
+
+    syntax O ::= `TyId "(" K ")"
+
+    // option types are sometimes used in the AST
+    // TODO maybe we should fix this?
+    syntax O ::= "None"
 
 end module

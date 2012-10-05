@@ -164,6 +164,13 @@ module OCAML-TOP-LEVEL is
     including OCAML-INCLUDE
 
     rule
+        <k> StSem(K1:K, K2:K) => K1 ~> K2 ...</k>
+
+    //@ Ignore exception definitions since we assume the program type checks
+    rule
+        <k> StExc(_, _) => . ...</k>
+
+    rule
         <k> StExp(Exp:K) => Exp ...</k>
 
 end module
