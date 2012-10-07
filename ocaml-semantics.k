@@ -186,6 +186,7 @@ module OCAML-PATTERNS is
         <pattern> PaInt(I) => . ...</pattern>
         <value> I:Int => . ...</value>
 
+    // TODO K can match multiple items
     rule // x (variable)
         <pattern> PaId(LId:LId) => . ...</pattern>
         <value> K:K => . ...</value>
@@ -195,11 +196,14 @@ module OCAML-PATTERNS is
         <pattern> PaAny => . ...</pattern>
         <value> K:K => . ...</value>
 
+    // TODO add test case to confirm that adding the substitution before
+    // the pattern matches is okay
     rule // p as x (alias)
         <pattern> PaAli(Pat:K, PaId(X:Id)) => Pat ...</pattern>
         <value> K:K ...</value>
         <subst>... . => X |-> K ...</subst>
 
+    // TODO what is the actual semantics of type-constrained patterns?
     rule // p : t (type constraint)
         <pattern> PaTyc(Pat:K, _) => Pat ...</pattern>
         <value> K:K ...</value>
