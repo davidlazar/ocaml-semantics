@@ -39,16 +39,12 @@ module OCAML-CONFIGURATION is
                 <expr> .K </expr>
             </matchAnalysis>
             <br/>
-            <patternAnalysis multiplicity="?" color="LightGoldenrod">
-                <bindK color="PaleGreen"> binding </bindK>
-                <bindAttempts>
-                    <bindAttempt multiplicity="*">
-                        <pattern color="Violet"> .K </pattern>
-                        <value color="GreenYellow"> .K </value>
-                        <subst> .Map </subst>
-                    </bindAttempt>
-                </bindAttempts>
-            </patternAnalysis>
+            <patternAttempts>
+                <patternAttempt multiplicity="*">
+                    <patterns color="Violet"> .Bag </patterns>
+                    <subst color="GreenYellow"> .Map </subst>
+                </patternAttempt>
+            </patternAttempts>
         </T>
         <result multiplicity="?" color="DodgerBlue">
             <exprResult> .K </exprResult>
@@ -178,105 +174,61 @@ end module
 module OCAML-PATTERNS is
     including OCAML-INCLUDE
 
-    syntax K
-      ::= "bind-failure"
-        | "bind-success" "(" Map ")"
+    syntax BagItem ::= K "<-" K
+
+    syntax BagItem ::= "pattern-failure" "(" K "," K ")"
 
     rule
-        <pattern> PaInt(I) => . ...</pattern>
-        <value> I:Int => . ...</value>
+        <patterns>... PaInt(I:Int) <- I => . ...</patterns>
 
-    // TODO K can match multiple items
-    rule // x (variable)
-        <pattern> PaId(LId:LId) => . ...</pattern>
-        <value> K:K => . ...</value>
-        <subst>... . => LId |-> K ...</subst>
-
-    rule // _ (wildcard)
-        <pattern> PaAny => . ...</pattern>
-        <value> K:K => . ...</value>
-
-    // TODO add test case to confirm that adding the substitution before
-    // the pattern matches is okay
-    rule // p as x (alias)
-        <pattern> PaAli(Pat:K, PaId(X:Id)) => Pat ...</pattern>
-        <value> K:K ...</value>
+    rule
+        <patterns>... PaId(X:LId) <- K:K => . ...</patterns>
         <subst>... . => X |-> K ...</subst>
 
-    // TODO what is the actual semantics of type-constrained patterns?
-    rule // p : t (type constraint)
-        <pattern> PaTyc(Pat:K, _) => Pat ...</pattern>
-        <value> K:K ...</value>
+    rule
+        <patterns>... PaAny <- K:K => . ...</patterns>
 
     rule
-        <pattern> PaTup(Pat:K) => Pat ...</pattern>
-        <value> ExTup(K:K) => K ...</value>
+        <patterns>... PaTup(Pat:K) <- ExTup(Exp:K) => Pat <- Exp ...</patterns>
 
     rule
-        <pattern> PaCom(Pat1:K, Pat2:K) => Pat1 ~> Pat2 ...</pattern>
-        <value> ExCom(K1:K, K2:K) => K1 ~> K2 ...</value>
+        <patterns>... PaId(UId:UId) <- UId => . ...</patterns>
 
     rule
-        <value> cons(K:K) => K ...</value>
+        <patterns>...
+            PaCom(Pat1:K, Pat2:K) <- ExCom(Exp1:K, Exp2:K) =>
+                (Pat1 <- Exp1)
+                (Pat2 <- Exp2)
+        ...</patterns>
 
     rule
-        <pattern> PaId(UId:UId) => . ...</pattern>
-        <value> UId => . ...</value>
+        <patterns>... PaAli(Pat:K, PaId(X:Id)) <- Exp:K => Pat <- Exp ...</patterns>
+        <subst>... . => X |-> Exp ...</subst>
 
     rule
-        <pattern> PaApp(Pat1:K, Pat2:K) => Pat1 ~> Pat2 ...</pattern>
-        <value> ExApp(K1:K, K2:K) => K1 ~> K2 ...</value>
-
-    rule // p | p (or-patterns)
-        <bindAttempt>...
-            <pattern> PaOrp(Pat1:K, Pat2:K) ~> Pats:K </pattern>
-            <value> V:K </value>
+        <patternAttempt>...
+            <patterns> (PaOrp(Pat1:K, Pat2:K) <- Exp:K) Rest:Bag </patterns>
             <subst> Subst:Map </subst>
-        ...</bindAttempt>
-        => (
-            <bindAttempt>...
-                <pattern> Pat1 ~> Pats </pattern>
-                <value> V </value>
-                <subst> Subst </subst>
-            ...</bindAttempt>
-            <bindAttempt>...
-                <pattern> Pat2 ~> Pats </pattern>
-                <value> V </value>
-                <subst> Subst </subst>
-            ...</bindAttempt>
-            )
+        ...</patternAttempt>
+        =>
+        <patternAttempt>...
+            <patterns> (Pat1 <- Exp) Rest </patterns>
+            <subst> Subst </subst>
+        ...</patternAttempt>
+        <patternAttempt>...
+            <patterns> (Pat2 <- Exp) Rest </patterns>
+            <subst> Subst </subst>
+        ...</patternAttempt>
 
     rule
-        <bindK> binding => bind-success(Subst) </bindK>
-        (
-            <bindAttempt>...
-                <value> . </value>
-                <pattern> . </pattern>
-                <subst> Subst:Map </subst>
-            ...</bindAttempt>
-            => .
-        )
+        <patterns> (Pat <- K) Rest:Bag => pattern-failure(Pat, K) </patterns>
+        when notBool (matches K Pat)
 
     rule
-        <patternAnalysis>...
-            <bindAttempt>...
-                <value> V:K ...</value>
-                <pattern> Pat:K ...</pattern>
-            ...</bindAttempt>
-            => .
-        ...</patternAnalysis>
-        when notBool (matches V Pat)
-
-    rule
-        <bindK> binding => bind-failure </bindK>
-        <bindAttempts> .Bag </bindAttempts>
-
-    // GC
-    rule
-        <patternAnalysis>...
-            <bindK> .K </bindK>
-        ...</patternAnalysis>
-        => .Bag
+        <patternAttempt>...
+            <patterns> pattern-failure(_, _) </patterns>
+        ...</patternAttempt>
+        => .
 
     /*@ Unfortunately, we have to define the predicate below since we don't
     have a way of saying "when no other rule matches" */
@@ -287,6 +239,7 @@ module OCAML-PATTERNS is
     eq matches _ PaAny = true
     eq matches _ PaAli(_, _) = true
     eq matches _ PaTyc(_, _) = true
+    eq matches _ PaOrp(_, _) = true
     eq matches ExTup(_) PaTup(_) = true
     eq matches ExCom(_, _) PaCom(_, _) = true
     eq matches I:Int PaInt(I) = true
@@ -311,24 +264,27 @@ module OCAML-MATCHING is
         <cases> McArr(Pat:K, _, Exp:K) => . ...</cases>
         <scrutinee> V:K </scrutinee>
         <expr> _ => Exp </expr>
-        ( . =>
-            <patternAnalysis>...
-                <bindAttempts>
-                    <bindAttempt>...
-                        <value> V </value>
-                        <pattern> Pat </pattern>
-                    ...</bindAttempt>
-                </bindAttempts>
-            ...</patternAnalysis>
-        )
+        <patternAttempts>
+            (_ =>
+                <patternAttempt>...
+                    <patterns> Pat <- V </patterns>
+                ...</patternAttempt>
+            )
+        </patternAttempts>
 
     rule
         <matchK> binding => matching </matchK>
-        <bindK> bind-failure => . </bindK>
+        <patternAttempts> .Bag </patternAttempts>
 
     rule
         <matchK> binding => match-success(Exp, Subst) </matchK>
-        <bindK> bind-success(Subst:Map) => . </bindK>
+        <patternAttempts>
+            (<patternAttempt>
+                <patterns> . </patterns>
+                <subst> Subst:Map </subst>
+            </patternAttempt>
+            Rest:Bag) => .
+        </patternAttempts>
         <expr> Exp:K => . </expr>
 
     rule
