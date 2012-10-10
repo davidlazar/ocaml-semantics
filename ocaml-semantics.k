@@ -67,6 +67,7 @@ module OCAML-PRIM-OPS is
       ::= primNegate
         | primNot
         | primRef
+        | primVal
         | primRaise
 
     syntax BinaryPrimOp
@@ -137,6 +138,9 @@ module OCAML-INIT is
             IdLid("not") |-> primNot
             IdLid("&&") |-> primAnd
             IdLid("||") |-> primOr
+
+            IdLid("ref") |-> primRef
+            IdLid("val") |-> primVal
         </assign>
 
 end module
@@ -301,21 +305,25 @@ end module
 
 module OCAML-MUTABLES is
     including OCAML-INCLUDE
+    including OCAML-PRIM-OPS
 
     rule
-        <k> 'primRef(V:KResult) => . ...</k>
+        <k> 'primRef(V:KResult) => loc(N) ...</k>
         <store>... . => loc(N) |-> V ...</store>
         <nextLoc> N:Int => N +Int 1 </nextLoc>
 
-    rule
-        <k> ExAss(L:Loc, V:KResult) => 'primAssign(L,, V) ...</k>
+    context ExAss(ExAcc(HOLE, _), _)
+    context ExAss(ExAcc(_, HOLE), _)
 
     rule
-        <k> 'primAssign(L:Loc,, V:KResult) => . ...</k>
+        <k> ExAss(ExAcc(L:Loc, primVal), V:KResult) => 'primAssign(L,, V) ...</k>
+
+    rule
+        <k> 'primAssign(L:Loc,, V:KResult) => ExId(IdUid("()")) ...</k>
         <store>... L |-> (_ => V) ...</store>
 
     rule
-        <k> ExAcc(L:Loc, IdLid("val")) => V ...</k>
+        <k> ExAcc(L:Loc, primVal) => V ...</k>
         <store>... L |-> V ...</store>
 
 end module

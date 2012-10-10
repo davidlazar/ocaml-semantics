@@ -36,7 +36,7 @@ module OCAML-SYNTAX is
     syntax O ::= `ExSeq "(" K ")" // sequencing?
     syntax O ::= `ExSem "(" K "," K ")" [strict(1)] // e1 ; e2
     syntax O ::= `ExIfe "(" K "," K "," K ")" [strict(1)] // if e1 then e1 else e3
-    syntax O ::= `ExAss "(" K "," K ")" // e1 := e2
+    syntax O ::= `ExAss "(" K "," K ")" [strict(2)] // e1 := e2
     syntax O ::= `ExAcc "(" K "," K ")" [strict] // e1.e2 (access)
     syntax O ::= `ExLet "(" K "," K ")"
     syntax O ::= `ExLetRec "(" K "," K ")"
