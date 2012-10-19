@@ -28,7 +28,7 @@ module OCAML-SYNTAX is
     syntax O ::= `ExNil
     syntax O ::= `ExId "(" K ")" // id
     syntax O ::= `ExInt "(" Int ")"
-    syntax O ::= `ExApp "(" K "," K ")" [strict(1)] // e1 e2
+    syntax O ::= `ExApp "(" K "," K ")" // e1 e2
     syntax O ::= `ExTup "(" K ")" [strict hybrid]
     syntax O ::= `ExCom "(" K "," K ")" [strict hybrid]
     syntax O ::= `ExMat "(" K "," K ")" [strict(1)] // value, match-case
