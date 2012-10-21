@@ -109,17 +109,17 @@ module OCAML-ARITHMETIC is
     rule ExInt(I:Int) => I
 
     syntax External
-      ::= primAdd
-        | primSubtract
-        | primMultiply
-        | primDivide
-        | primNegate
+      ::= "%addint"
+        | "%subint"
+        | "%mulint"
+        | "%divint"
+        | "%negint"
 
-    rule 'primAdd(I1:Int,, I2:Int) => I1 +Int I2
-    rule 'primSubtract(I1:Int,, I2:Int) => I1 -Int I2
-    rule 'primMultiply(I1:Int,, I2:Int) => I1 *Int I2
-    rule 'primDivide(I1:Int,, I2:Int) => I1 /Int I2
-    rule 'primNegate(I:Int) => 0 -Int I
+    rule '%addint(I1:Int,, I2:Int) => I1 +Int I2
+    rule '%subint(I1:Int,, I2:Int) => I1 -Int I2
+    rule '%mulint(I1:Int,, I2:Int) => I1 *Int I2
+    rule '%divint(I1:Int,, I2:Int) => I1 /Int I2
+    rule '%negint(I:Int) => 0 -Int I
 
 end module
 
@@ -129,15 +129,15 @@ module OCAML-BOOLEANS is
     rule IdUid("False") => false
     rule IdUid("True") => true
 
-    syntax External ::= primNot
+    syntax External ::= "%boolnot"
 
-    rule 'primNot(false) => true
-    rule 'primNot(true) => false
+    rule '%boolnot(false) => true
+    rule '%boolnot(true) => false
 
-    syntax LazyExternal ::= primAnd | primOr
+    syntax LazyExternal ::= "%sequand" | "%sequor"
 
-    rule 'primAnd(Exp1:K,, Exp2:K) => ExIfe(Exp1, Exp2, false)
-    rule 'primOr(Exp1:K,, Exp2:K) => ExIfe(Exp1, true, Exp2)
+    rule '%sequand(Exp1:K,, Exp2:K) => ExIfe(Exp1, Exp2, false)
+    rule '%sequor(Exp1:K,, Exp2:K) => ExIfe(Exp1, true, Exp2)
 
 end module
 
@@ -248,7 +248,7 @@ end module
 module OCAML-EXCEPTIONS is
     including OCAML-INCLUDE
 
-    syntax External ::= primRaise
+    syntax External ::= "%raise"
 
     syntax K ::= "x" "(" K "," K "," Map ")"
     syntax K ::= "popx"
@@ -263,7 +263,7 @@ module OCAML-EXCEPTIONS is
         <xstack> K:K => . ...</xstack>
 
     rule
-        <k> 'primRaise(V:KResult) ~> _ => ExMat(V, McOr(MC, McArr(PaAny, ExNil, 'primRaise(V)))) ~> K </k>
+        <k> '%raise(V:KResult) ~> _ => ExMat(V, McOr(MC, McArr(PaAny, ExNil, 'primRaise(V)))) ~> K </k>
         <xstack> x(K:K, MC:K, Env:Map) => . ...</xstack>
         <env> _ => Env </env>
 
@@ -273,14 +273,14 @@ module OCAML-MUTABLES is
     including OCAML-INCLUDE
 
     syntax External
-      ::= primRef
-        | primAssign
+      ::= "%ref"    // %makemutable
+        | "%assign" // %setfield0
 
     // "val" isn't really an external
-    syntax KResult ::= primVal
+    syntax KResult ::= "%val"
 
     rule
-        <k> 'primRef(V:KResult) => loc(N) ...</k>
+        <k> '%ref(V:KResult) => loc(N) ...</k>
         <store>... . => loc(N) |-> V ...</store>
         <nextLoc> N:Int => N +Int 1 </nextLoc>
 
@@ -288,14 +288,14 @@ module OCAML-MUTABLES is
     context ExAss(ExAcc(_, HOLE), _)
 
     rule
-        <k> ExAss(ExAcc(L:Loc, primVal), V:KResult) => 'primAssign(L,, V) ...</k>
+        <k> ExAss(ExAcc(L:Loc, %val), V:KResult) => '%assign(L,, V) ...</k>
 
     rule
-        <k> 'primAssign(L:Loc,, V:KResult) => ExId(IdUid("()")) ...</k>
+        <k> '%assign(L:Loc,, V:KResult) => ExId(IdUid("()")) ...</k>
         <store>... L |-> (_ => V) ...</store>
 
     rule
-        <k> ExAcc(L:Loc, primVal) => V ...</k>
+        <k> ExAcc(L:Loc, %val) => V ...</k>
         <store>... L |-> V ...</store>
 
 end module
@@ -488,19 +488,20 @@ module OCAML-INIT is
     rule
         <k> initEnv => assigning ...</k>
         <assign> . =>
-            IdLid("~-") |-> external(primNegate, 1)
-            IdLid("raise") |-> external(primRaise, 1)
-            IdLid("+") |-> external(primAdd, 2)
-            IdLid("-") |-> external(primSubtract, 2)
-            IdLid("*") |-> external(primMultiply, 2)
-            IdLid("/") |-> external(primDivide, 2)
+            IdLid("+") |-> external(%addint, 2)
+            IdLid("-") |-> external(%subint, 2)
+            IdLid("*") |-> external(%mulint, 2)
+            IdLid("/") |-> external(%divint, 2)
+            IdLid("~-") |-> external(%negint, 1)
 
-            IdLid("not") |-> external(primNot, 1)
-            IdLid("&&") |-> external(primAnd, 2)
-            IdLid("||") |-> external(primOr, 2)
+            IdLid("not") |-> external(%boolnot, 1)
+            IdLid("&&") |-> external(%sequand, 2)
+            IdLid("||") |-> external(%sequor, 2)
 
-            IdLid("ref") |-> external(primRef, 1)
-            IdLid("val") |-> primVal
+            IdLid("raise") |-> external(%raise, 1)
+
+            IdLid("ref") |-> external(%ref, 1)
+            IdLid("val") |-> %val
         </assign>
 
 end module
