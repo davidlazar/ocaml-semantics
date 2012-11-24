@@ -13,7 +13,7 @@ module OCAML-SYNTAX-EXTRAS is
     syntax Loc ::= "loc" "(" Int ")"
     syntax KResult ::= Loc
 
-    syntax KResult ::= "cons" "(" K ")"
+    syntax KResult ::= "cons" "(" K "," List{K} ")"
 
     syntax K ::= "env" "(" Map ")"
 
@@ -221,11 +221,9 @@ module OCAML-FUNCTIONS is
     rule
         <k> ExId(UId:UId) => UId ...</k>
 
-    rule
-        <k> ExApp(UId:UId, V:KResult) => cons(ExApp(UId, V)) ...</k>
+    context apply(UId:UId, _:List{K},, HOLE,, _:List{K}) [superheat]
 
-    rule
-        <k> ExApp(cons(K:K), V:KResult) => cons(ExApp(K, V)) ...</k>
+    rule apply(UId:UId, VS:List{KResult}) => cons(UId, VS)
 
     syntax KResult ::= "closure" "(" Map "," K ")"
 
@@ -364,7 +362,7 @@ module OCAML-PATTERNS is
     op matches__ : K K -> Bool
     eq matches _ PaId(LId:LId) = true
     eq matches UId:UId PaId(UId) = true
-    eq matches cons(_) _ = true
+    eq matches cons(_, _) _ = true
     eq matches _ PaAny = true
     eq matches _ PaAli(_, _) = true
     eq matches _ PaTyc(_, _) = true
