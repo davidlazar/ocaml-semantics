@@ -103,6 +103,14 @@ module OCAML-INCLUDE is
 
 end module
 
+module OCAML-UNIT is
+    including OCAML-INCLUDE
+
+    syntax KResult ::= "unit"
+    rule IdUid("()") => unit
+
+end module
+
 module OCAML-ARITHMETIC is
     including OCAML-INCLUDE
 
@@ -269,6 +277,7 @@ end module
 
 module OCAML-MUTABLES is
     including OCAML-INCLUDE
+    including OCAML-UNIT
 
     syntax External
       ::= "%ref"    // %makemutable
@@ -289,7 +298,7 @@ module OCAML-MUTABLES is
         <k> ExAss(ExAcc(L:Loc, %val), V:KResult) => '%assign(L,, V) ...</k>
 
     rule
-        <k> '%assign(L:Loc,, V:KResult) => ExId(IdUid("()")) ...</k>
+        <k> '%assign(L:Loc,, V:KResult) => unit ...</k>
         <store>... L |-> (_ => V) ...</store>
         [supercool]
 
@@ -301,6 +310,7 @@ end module
 
 module OCAML-PATTERNS is
     including OCAML-INCLUDE
+    including OCAML-UNIT
 
     syntax BagItem ::= K "<-" K
 
@@ -321,6 +331,9 @@ module OCAML-PATTERNS is
 
     rule
         <patterns>... PaId(UId:UId) <- UId => . ...</patterns>
+
+    rule
+        <patterns>... PaId(IdUid("()")) <- unit => . ...</patterns>
 
     rule
         <patterns>...
@@ -363,6 +376,7 @@ module OCAML-PATTERNS is
     op matches__ : K K -> Bool
     eq matches _ PaId(LId:LId) = true
     eq matches UId:UId PaId(UId) = true
+    eq matches unit PaId(IdUid("()")) = true
     eq matches cons(_, _) _ = true
     eq matches _ PaAny = true
     eq matches _ PaAli(_, _) = true
@@ -522,6 +536,7 @@ end module
 module OCAML-SEMANTICS is
     including OCAML-INCLUDE
 
+    including OCAML-UNIT
     including OCAML-ARITHMETIC
     including OCAML-BOOLEANS
     including OCAML-CONTROL-FLOW
