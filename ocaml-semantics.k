@@ -291,6 +291,7 @@ module OCAML-MUTABLES is
     rule
         <k> '%assign(L:Loc,, V:KResult) => ExId(IdUid("()")) ...</k>
         <store>... L |-> (_ => V) ...</store>
+        [supercool]
 
     rule
         <k> ExAcc(L:Loc, %val) => V ...</k>
