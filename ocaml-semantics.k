@@ -45,9 +45,11 @@ module OCAML-CONFIGURATION is
                     <subst color="GreenYellow"> .Map </subst>
                 </patternAttempt>
             </patternAttempts>
+            <output> "" </output>
         </T>
         <result multiplicity="?" color="DodgerBlue">
             <exprResult> .K </exprResult>
+            <output> "" </output>
         </result>
 
 
@@ -308,6 +310,20 @@ module OCAML-MUTABLES is
 
 end module
 
+module OCAML-IO is
+    including OCAML-INCLUDE
+    including OCAML-UNIT
+
+    syntax External
+      ::= "%print-int"
+
+    rule
+        <k> '%print-int(I:Int) => unit ...</k>
+        <output> S:String => S +String Int2String(I) </output>
+        [supercool]
+
+end module
+
 module OCAML-PATTERNS is
     including OCAML-INCLUDE
     including OCAML-UNIT
@@ -497,7 +513,9 @@ module OCAML-INIT is
     including OCAML-BOOLEANS
     including OCAML-MUTABLES
     including OCAML-EXCEPTIONS
+    including OCAML-IO
 
+    // TODO eventually this will go in a separate Pervasives module
     rule
         <k> initEnv => assigning ...</k>
         <assign> . =>
@@ -515,6 +533,8 @@ module OCAML-INIT is
 
             IdLid("ref") |-> external(%ref, 1)
             IdLid("val") |-> %val
+
+            IdLid("print_int") |-> external(%print-int, 1)
         </assign>
 
 end module
@@ -525,10 +545,12 @@ module OCAML-CLEANUP is
     rule
         <T>...
             <k> V:KResult </k>
+            <output> S:String </output>
         ...</T>
         =>
         <result>...
             <exprResult> V </exprResult>
+            <output> S </output>
         ...</result>
 
 end module
@@ -544,6 +566,7 @@ module OCAML-SEMANTICS is
     including OCAML-FUNCTIONS
     including OCAML-EXCEPTIONS
     including OCAML-MUTABLES
+    including OCAML-IO
     including OCAML-PATTERNS
     including OCAML-MATCHING
 
