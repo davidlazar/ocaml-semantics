@@ -123,12 +123,14 @@ module OCAML-ARITHMETIC is
         | "%subint"
         | "%mulint"
         | "%divint"
+        | "%modint"
         | "%negint"
 
     rule '%addint(I1:Int,, I2:Int) => I1 +Int I2
     rule '%subint(I1:Int,, I2:Int) => I1 -Int I2
     rule '%mulint(I1:Int,, I2:Int) => I1 *Int I2
     rule '%divint(I1:Int,, I2:Int) => I1 /Int I2
+    rule '%modint(I1:Int,, I2:Int) => I1 %Int I2
     rule '%negint(I:Int) => 0 -Int I
 
 end module
@@ -523,6 +525,7 @@ module OCAML-INIT is
             IdLid("-") |-> external(%subint, 2)
             IdLid("*") |-> external(%mulint, 2)
             IdLid("/") |-> external(%divint, 2)
+            IdLid("mod") |-> external(%modint, 2)
             IdLid("~-") |-> external(%negint, 1)
 
             IdLid("not") |-> external(%boolnot, 1)
