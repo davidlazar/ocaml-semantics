@@ -63,9 +63,10 @@ module OCAML-APPLICATION is
 
     rule ExApp(K1:K, K2:K) => flattenApp(ExApp(K1, K2), .List{K})
 
-    rule flattenApp(ExApp(K:K, Arg:K), Args:List{K}) => flattenApp(K, Arg,, Args)
-    rule flattenApp(K:K, Args:List{K}) => apply(K, Args)
-        when getKLabel(K) =/=KLabel 'ExApp`(_`,_`)
+    define flattenApp(ExApp(K:K, Arg:K), Args:List{K}) => flattenApp(K, Arg,, Args)
+    define flattenApp(PaApp(K:K, Arg:K), Args:List{K}) => flattenApp(K, Arg,, Args)
+    define flattenApp(K:K, Args:List{K}) => apply(K, Args)
+        when getKLabel(K) =/=KLabel 'ExApp`(_`,_`) orBool getKLabel(K) =/=KLabel 'PaApp`(_`,_`)
 
 end module
 
@@ -361,6 +362,21 @@ module OCAML-PATTERNS is
         ...</patterns>
 
     rule
+        <patterns>...
+            (PaApp(Pat1:K, Pat2:K) => flattenApp(PaApp(Pat1, Pat2), .List{K})) <- _
+        ...</patterns>
+
+    rule
+        <patterns>...
+            apply(Pat:K, Pats:List{K}) <- cons(UId:UId, Args:List{K})
+            => (Pat <- UId) zip<-(Pats, Args)
+        ...</patterns>
+
+    syntax Bag ::= "zip<-" "(" List{K} "," List{K} ")"
+    define zip<-(Pat,, Pats, Arg:K,, Args) => (Pat <- Arg) zip<-(Pats, Args)
+    define zip<-(.List{K}, .List{K}) => .
+
+    rule
         <patterns>... PaAli(Pat:K, PaId(X:Id)) <- Exp:K => Pat <- Exp ...</patterns>
         <subst>... . => X |-> Exp ...</subst>
 
@@ -395,7 +411,6 @@ module OCAML-PATTERNS is
     eq matches _ PaId(LId:LId) = true
     eq matches UId:UId PaId(UId) = true
     eq matches unit PaId(IdUid("()")) = true
-    eq matches cons(_, _) _ = true
     eq matches _ PaAny = true
     eq matches _ PaAli(_, _) = true
     eq matches _ PaTyc(_, _) = true
