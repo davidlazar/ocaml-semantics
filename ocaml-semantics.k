@@ -345,13 +345,13 @@ module OCAML-PATTERNS is
         <patterns>... PaAny <- K:K => . ...</patterns>
 
     rule
-        <patterns>... PaTup(Pat:K) <- ExTup(Exp:K) => Pat <- Exp ...</patterns>
-
-    rule
         <patterns>... PaId(UId:UId) <- UId => . ...</patterns>
 
     rule
         <patterns>... PaId(IdUid("()")) <- unit => . ...</patterns>
+
+    rule
+        <patterns>... PaTup(Pat:K) <- ExTup(Exp:K) => Pat <- Exp ...</patterns>
 
     rule
         <patterns>...
