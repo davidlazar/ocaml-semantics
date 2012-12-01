@@ -25,6 +25,9 @@ module OCAML-SYNTAX is
     syntax O ::= `BiAnd "(" K "," K ")"
     syntax O ::= `BiEq "(" K "," K ")" // pat = v
 
+    syntax O ::= `RbEq "(" K "," K ")" [strict(2) hybrid] // x = v
+    syntax O ::= `RbSem "(" K "," K ")" [strict superheat hybrid]
+
     syntax O ::= `ExNil
     syntax O ::= `ExId "(" K ")" // id
     syntax O ::= `ExInt "(" Int ")"
@@ -37,10 +40,11 @@ module OCAML-SYNTAX is
     syntax O ::= `ExSem "(" K "," K ")" [strict(1)] // e1 ; e2
     syntax O ::= `ExIfe "(" K "," K "," K ")" [strict(1)] // if e1 then e1 else e3
     syntax O ::= `ExAss "(" K "," K ")" [strict(2)] // e1 := e2
-    syntax O ::= `ExAcc "(" K "," K ")" [strict] // e1.e2 (access)
+    syntax O ::= `ExAcc "(" K "," K ")" [strict(1)] // e1.e2 (access)
     syntax O ::= `ExLet "(" K "," K ")"
     syntax O ::= `ExLetRec "(" K "," K ")"
     syntax O ::= `ExTry "(" K "," K ")"
+    syntax O ::= `ExRec "(" K "," K ")" [strict(1)]
 
     syntax O ::= `StExp "(" K ")" // expr
     syntax O ::= `StSem "(" K "," K ")" // st1 ;; st2

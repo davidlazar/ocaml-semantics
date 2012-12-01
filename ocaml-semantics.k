@@ -31,6 +31,12 @@ module OCAML-CONFIGURATION is
             <xstack color="LightSlateBlue"> .K </xstack>
             <nextLoc> 0 </nextLoc>
             <assign> .Map </assign>
+            <records>
+                <record multiplicity="*">
+                    <recordId> 0 </recordId>
+                    <fields> .Map </fields>
+                </record>
+            </records>
             <br/>
             <matchAnalysis multiplicity="?" color="LightGoldenrod">
                 <matchK color="PaleGreen"> matching </matchK>
@@ -280,36 +286,48 @@ module OCAML-EXCEPTIONS is
 
 end module
 
-module OCAML-MUTABLES is
+module OCAML-RECORDS is
     including OCAML-INCLUDE
     including OCAML-UNIT
 
-    syntax External
-      ::= "%ref"    // %makemutable
-        | "%assign" // %setfield0
-
-    // "val" isn't really an external
-    syntax KResult ::= "%val"
+    syntax KResult ::= "recordEntry" "(" Int ")"
 
     rule
-        <k> '%ref(V:KResult) => loc(N) ...</k>
-        <store>... . => loc(N) |-> V ...</store>
+        <k> ExRec(K:K, _) => recordEntry(N) ...</k>
         <nextLoc> N:Int => N +Int 1 </nextLoc>
+        ( . =>
+            <record>...
+                <recordId> N </recordId>
+                <fields> getFields(K) </fields>
+            ...</record>
+        )
+
+    syntax Map ::= "getFields" "(" K ")"
+    define getFields(RbSem(R1:K, R2:K)) => getFields(R1) getFields(R2)
+    define getFields(RbEq(Id:Id, K:K)) => Id |-> K
+
+    rule
+        <k> ExAcc(recordEntry(N:Int), ExId(X:Id)) => V ...</k>
+        <recordId> N </recordId>
+        <fields>... X |-> V:KResult ...</fields>
 
     context ExAss(ExAcc(HOLE, _), _)
-    context ExAss(ExAcc(_, HOLE), _)
 
     rule
-        <k> ExAss(ExAcc(L:Loc, %val), V:KResult) => '%assign(L,, V) ...</k>
-
-    rule
-        <k> '%assign(L:Loc,, V:KResult) => unit ...</k>
-        <store>... L |-> (_ => V) ...</store>
+        <k> ExAss(ExAcc(recordEntry(N:Int), ExId(X:Id)), V:KResult) => unit ...</k>
+        <recordId> N </recordId>
+        <fields>... X |-> (_ => V) ...</fields>
         [supercool]
 
+end module
+
+module OCAML-REF is
+    including OCAML-INCLUDE
+
+    syntax External ::= "%ref" // %makemutable
+
     rule
-        <k> ExAcc(L:Loc, %val) => V ...</k>
-        <store>... L |-> V ...</store>
+        <k> '%ref(V:KResult) => ExRec(RbEq(IdLid("val"), V), ExNil) ...</k>
 
 end module
 
@@ -528,7 +546,7 @@ module OCAML-INIT is
     including OCAML-INCLUDE
     including OCAML-ARITHMETIC
     including OCAML-BOOLEANS
-    including OCAML-MUTABLES
+    including OCAML-REF
     including OCAML-EXCEPTIONS
     including OCAML-IO
 
@@ -550,7 +568,6 @@ module OCAML-INIT is
             IdLid("raise") |-> external(%raise, 1)
 
             IdLid("ref") |-> external(%ref, 1)
-            IdLid("val") |-> %val
 
             IdLid("print_int") |-> external(%print-int, 1)
         </assign>
@@ -583,7 +600,8 @@ module OCAML-SEMANTICS is
     including OCAML-LET-LETREC
     including OCAML-FUNCTIONS
     including OCAML-EXCEPTIONS
-    including OCAML-MUTABLES
+    including OCAML-RECORDS
+    including OCAML-REF
     including OCAML-IO
     including OCAML-PATTERNS
     including OCAML-MATCHING
