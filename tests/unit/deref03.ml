@@ -1,1 +1,1 @@
-let x = ref 0 in x := 17; !x
+let x = ref 1 in x := 0; !x

@@ -1,1 +1,1 @@
-match 1 with _ -> 1 | _ -> 2
+match 0 with x -> x

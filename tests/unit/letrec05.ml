@@ -1,1 +1,1 @@
-let rec x = 13 and foo x = x + 7 in foo 5
+let rec f _ = y and y = 8 in y - f ()

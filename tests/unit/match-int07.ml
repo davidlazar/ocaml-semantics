@@ -1,1 +1,1 @@
-match 3 with 4 -> 0 | x -> x * x | y -> 1
+match 42 with 23 -> 1 | x -> x - x | 42 -> 2

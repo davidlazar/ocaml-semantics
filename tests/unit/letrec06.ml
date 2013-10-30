@@ -1,1 +1,1 @@
-let rec x = 13 in let foo x = x + 7 in foo 5
+let x = 1 and y = 2 in let rec f x = x + y () + 1 and y = fun _ -> x and x = 3 in f x - 7

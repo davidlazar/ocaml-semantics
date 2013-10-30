@@ -1,1 +1,1 @@
-let y = 10 in let foo x = x + y in let y = 1000 in foo 4
+let y = 10 in let y = 12 and f x = x + y in 22 - f y

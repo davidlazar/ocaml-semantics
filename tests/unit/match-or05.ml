@@ -1,1 +1,1 @@
-match (1,2) with ((2,a)|(a,2)) -> a | _ -> 2
+match (4,2) with ((a,b) | (b,a)) -> b / a | _ -> 1

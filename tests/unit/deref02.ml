@@ -1,1 +1,1 @@
-let x = ref 23 in !x
+let x = ref 0 in !x

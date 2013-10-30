@@ -1,1 +1,1 @@
-let foo x = x + 7 in foo 7
+let f x = 0 / x in f 7

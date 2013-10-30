@@ -1,1 +1,1 @@
-let x = 13 and foo x = x + 7 in foo 5
+let x = 13 and f x = x / 7 in f 5

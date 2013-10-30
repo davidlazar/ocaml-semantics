@@ -1,1 +1,1 @@
-match 2 with 1 -> 2 | 2 -> 4
+match 1 with 2 -> 3 | 1 -> 0

@@ -1,1 +1,1 @@
-(fun f -> f 3) (fun x -> x + 7)
+(fun x -> x - x) (-42)
